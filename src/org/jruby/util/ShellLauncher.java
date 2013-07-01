@@ -540,7 +540,7 @@ public class ShellLauncher {
         OutputStream error = runtime.getErrorStream();
         InputStream input = runtime.getInputStream();
         try {
-            aProcess = run(runtime, rawArgs, doExecutableSearch);
+            Process aProcess = run(runtime, rawArgs, doExecutableSearch);
 
             InputStream pOut = aProcess.getInputStream();
             InputStream pErr = aProcess.getErrorStream();
