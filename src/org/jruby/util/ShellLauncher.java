@@ -541,8 +541,26 @@ public class ShellLauncher {
         InputStream input = runtime.getInputStream();
         try {
             Process aProcess = run(runtime, rawArgs, doExecutableSearch);
-            handleStreams(runtime, aProcess, input, output, error);
-            return new long[] {aProcess.waitFor(), getPidFromProcess(aProcess)};
+
+            InputStream pOut = aProcess.getInputStream();
+            InputStream pErr = aProcess.getErrorStream();
+            OutputStream pIn = aProcess.getOutputStream();
+
+            StreamPumper t1 = new StreamPumper(runtime, pOut, output, false, Pumper.Slave.IN, aProcess);
+            StreamPumper t2 = new StreamPumper(runtime, pErr, error, false, Pumper.Slave.IN, aProcess);
+            StreamPumper t3 = new StreamPumper(runtime, input, pIn, true, Pumper.Slave.OUT, aProcess);
+
+            t1.start();
+            t2.start();
+            t3.start();
+            try {
+                return new long[] {aProcess.waitFor(), getPidFromProcess(aProcess)};
+            } finally {
+                t1.quit();
+                t2.quit();
+                t3.quit();
+                t3.stop(); //STDIN is blocking if we haven't consumed all of the input so we force stop it here.
+            }
         } catch (IOException e) {
             throw runtime.newIOErrorFromException(e);
         } catch (InterruptedException e) {
