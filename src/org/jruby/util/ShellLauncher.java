@@ -559,7 +559,7 @@ public class ShellLauncher {
                 t1.quit();
                 t2.quit();
                 t3.quit();
-                t3.stop(); //stinky STDIN is blocking
+                t3.stop(); //STDIN is blocking if we haven't consumed all of the input so we force stop it here.
             }
         } catch (IOException e) {
             throw runtime.newIOErrorFromException(e);
